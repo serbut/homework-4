@@ -4,29 +4,35 @@ import os
 import unittest
 
 from selenium.webdriver import DesiredCapabilities, Remote
-from base import AuthPage
+
+from page import AuthPage
+
+USERNAME = os.environ['USERNAME']
+PASSWORD = os.environ['PASSWORD']
 
 
-class AuthTest(unittest.TestCase):
-    USERNAME = os.environ['USERNAME']
-    PASSWORD = os.environ['PASSWORD']
+class BaseTest(unittest.TestCase):
 
     def setUp(self):
-        browser = os.environ.get('BROWSER', 'CHROME')
+        browser = os.environ.get('BROWSER', 'FIREFOX')
 
         self.driver = Remote(
             command_executor='http://127.0.0.1:4444/wd/hub',
             desired_capabilities=getattr(DesiredCapabilities, browser).copy()
         )
+        self.driver.implicitly_wait(5)
+
+        self.login()
 
     def tearDown(self):
         self.driver.quit()
 
-    def test(self):
+    def login(self):
         auth_page = AuthPage(self.driver)
         auth_page.open()
 
         auth_form = auth_page.form
-        auth_form.set_login(self.USERNAME)
-        auth_form.set_password(self.PASSWORD)
+        auth_form.set_login(USERNAME)
+        auth_form.set_password(PASSWORD)
         auth_form.submit()
+
