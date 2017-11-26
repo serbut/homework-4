@@ -3,11 +3,11 @@
 import urlparse
 
 import os
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
-
+#
+# MAX_WAIT = 10
+# MIN_WAIT = 1
 
 class Page(object):
     BASE_URL = 'https://ok.ru/'
@@ -97,14 +97,15 @@ class Photos(Component):
         expected_conditions.visibility_of_element_located((By.XPATH, self.TOP))
         self.driver.find_element_by_xpath(self.UPLOAD).send_keys(os.path.join(os.getcwd(), 'tests/photos/img.jpg'))
         expected_conditions.visibility_of_element_located((By.XPATH, self.UPLOADED))
-        self.driver.implicitly_wait(1)
+        # self.driver.implicitly_wait(MIN_WAIT)
 
         if len(self.driver.find_elements_by_xpath(self.BACK)) != 0:
             self.driver.find_element_by_xpath(self.BACK).click()
         else:
+            expected_conditions.visibility_of_element_located((By.XPATH, self.ALBUM))
             self.driver.find_element_by_xpath(self.ALBUM).click()
 
-        self.driver.implicitly_wait(5)
+        # self.driver.implicitly_wait(MAX_WAIT)
         href = self.driver.find_element_by_xpath(self.PREVIEW).get_attribute('href').split('/')
         return href[len(href) - 1]
 
@@ -116,7 +117,6 @@ class Photos(Component):
         self.driver.find_element_by_xpath(self.PHOTO.format(user, id)).click()
 
     def check_photo_opened(self):
-        expected_conditions.visibility_of_element_located((By.XPATH, self.RESULT))
         self.driver.find_element_by_xpath(self.RESULT)
 
     def open_photo(self, user, id):
@@ -146,9 +146,9 @@ class Photos(Component):
         self.driver.execute_script("arguments[0].click();", button)
 
     def check_photo_dissapeared(self):
-        self.driver.implicitly_wait(1)
+        self.driver.implicitly_wait(MIN_WAIT)
         is_dissapeared = len(self.driver.find_elements_by_xpath(self.RESULT)) == 0
-        self.driver.implicitly_wait(5)
+        self.driver.implicitly_wait(MAX_WAIT)
         return is_dissapeared
 
     def click_delete(self):

@@ -7,28 +7,48 @@ from page import PhotosPage, MainPage
 
 
 class BasePhotoTest(BaseTest):
+
     def setUp(self):
         super(BasePhotoTest, self).setUp()
+
+        self.added_photos = []
 
         self.photos_page = PhotosPage(self.driver, USERNAME)
         self.photos_page.open()
         self.photos = self.photos_page.photos()
 
+    def tearDown(self):
+        self.photos_page.open()
+        for photo in self.added_photos:
+            self.delete_photo(photo)
+        super(BasePhotoTest, self).tearDown()
+
+    def add_photo(self):
+        id = self.photos.upload_photo()
+        self.added_photos.append(id)
+        self.photos_page.open()
+        return id
+
+    def delete_photo(self, id):
+        self.photos.open_photo(USERNAME, id)
+        self.photos.click_delete()
+        self.added_photos.remove(id)
+
 
 class UploadPhotoTest(BasePhotoTest):
     def test(self):
-        self.photos.upload_photo()
+        self.add_photo()
 
 
 class OpenPhotoTest(BasePhotoTest):
     def test(self):
-        id = self.photos.upload_photo()
+        id = self.add_photo()
         self.photos.open_photo(USERNAME, id)
 
 
 class MakeMainPhotoTest(BasePhotoTest):
     def test(self):
-        id = self.photos.upload_photo()
+        id = self.add_photo()
         self.photos.open_photo(USERNAME, id)
 
         self.photos.click_make_main()
@@ -37,7 +57,7 @@ class MakeMainPhotoTest(BasePhotoTest):
 
 class SubmitMainPhotoTest(BasePhotoTest):
     def test(self):
-        id = self.photos.upload_photo()
+        id = self.add_photo()
         self.photos.submit_main(USERNAME, id)
 
         self.main_page = MainPage(self.driver, USERNAME)
@@ -47,7 +67,7 @@ class SubmitMainPhotoTest(BasePhotoTest):
 
 class ClosePhotoOverlayTest(BasePhotoTest):
     def test(self):
-        id = self.photos.upload_photo()
+        id = self.add_photo()
         self.photos.open_photo(USERNAME, id)
         self.photos.click_overlay()
         self.assertTrue(self.photos.check_photo_dissapeared())
@@ -55,7 +75,7 @@ class ClosePhotoOverlayTest(BasePhotoTest):
 
 class ClosePhotoButtonTest(BasePhotoTest):
     def test(self):
-        id = self.photos.upload_photo()
+        id = self.add_photo()
         self.photos.open_photo(USERNAME, id)
         self.photos.click_close()
         self.assertTrue(self.photos.check_photo_dissapeared())
@@ -63,20 +83,18 @@ class ClosePhotoButtonTest(BasePhotoTest):
 
 class DeletePhotoTest(BasePhotoTest):
     def test(self):
-        id = self.photos.upload_photo()
-        self.photos_page.open()
+        id = self.add_photo()
         count = self.photos.get_photos_count()
 
-        self.photos.open_photo(USERNAME, id)
+        self.delete_photo(id)
 
-        self.photos.click_delete()
         self.photos_page.open()
         self.assertEqual(count, self.photos.get_photos_count() + 1)
 
 
 class RestorePhotoTest(BasePhotoTest):
     def test(self):
-        id = self.photos.upload_photo()
+        id = self.add_photo()
         self.photos_page.open()
         count = self.photos.get_photos_count()
         self.photos.open_photo(USERNAME, id)
@@ -91,7 +109,7 @@ class RestorePhotoTest(BasePhotoTest):
 class AddDescriptionTest(BasePhotoTest):
     def test(self):
         description = "Some description"
-        id = self.photos.upload_photo()
+        id = self.add_photo()
         self.photos.open_photo(USERNAME, id)
         self.photos.add_description(description)
 
@@ -100,7 +118,7 @@ class AddDescriptionTest(BasePhotoTest):
 
 class ShowLinkTest(BasePhotoTest):
     def test(self):
-        id = self.photos.upload_photo()
+        id = self.add_photo()
         self.photos.open_photo(USERNAME, id)
         self.assertEqual(self.driver.current_url, self.photos.get_link())
 
@@ -108,7 +126,7 @@ class ShowLinkTest(BasePhotoTest):
 class AddCommentTest(BasePhotoTest):
     def test(self):
         comment = "Some comment"
-        id = self.photos.upload_photo()
+        id = self.add_photo()
         self.photos.open_photo(USERNAME, id)
         self.photos.add_comment(comment)
 

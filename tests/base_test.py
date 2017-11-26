@@ -20,7 +20,7 @@ class BaseTest(unittest.TestCase):
             command_executor='http://127.0.0.1:4444/wd/hub',
             desired_capabilities=getattr(DesiredCapabilities, browser).copy()
         )
-        self.driver.implicitly_wait(5)
+        self.driver.implicitly_wait(10)
 
         self.login()
 
