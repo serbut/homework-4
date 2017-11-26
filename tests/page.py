@@ -6,6 +6,7 @@ import os
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class Page(object):
@@ -53,10 +54,12 @@ class Component(object):
 
 class Photos(Component):
     UPLOAD = '//span[@class="html5-link_w js-fileapi-wrapper photo_upload_btn"]'
-    # UPLOAD
+
     PHOTO = '//a[@class="photo-card_cnt"]'
     RESULT = '//div[@data-l="t,image"]'
+
     FULLSCREEN = '//i[@class="tico_img ic ic_full-scr"]'
+    FULLSCREEN_CLASS = 'photo-layer_fullScreen'
 
     MAKEMAIN = '//i[@class="tico_img ic ic_i_mainPhoto"]'
     FRAME_AREA = '//div[@class="jcrop-tracker"]'
@@ -77,6 +80,7 @@ class Photos(Component):
 
     SHOW_LINK = '//span[contains(text(), "Получить ссылку")]'
     LINK = '//input[@class="photo-layer_get-link_ac"]'
+
 
     BACK = '//span[@class="tico tico__12"][contains(text(), "Вернуться")]'
     SUCCESS = '//div[@class="js-show-controls"]'
@@ -114,8 +118,9 @@ class Photos(Component):
         self.driver.find_element_by_xpath(self.FULLSCREEN).click()
 
     def check_fullscreen_opened(self):
-        # TODO
-        return True
+        WebDriverWait(self.driver, 10).until(
+            lambda driver: self.FULLSCREEN_CLASS in self.driver.find_element_by_tag_name('body').get_attribute('class')
+        )
 
     def click_make_main(self):
         self.driver.find_element_by_xpath(self.MAKEMAIN).click()

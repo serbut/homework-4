@@ -32,7 +32,7 @@ class OpenFullScreenTest(BasePhotoTest):
         self.photos.open_photo(USERNAME, id)
 
         self.photos.open_fullscreen()
-        # TODO test
+        self.photos.check_fullscreen_opened()
 
 
 class MakeMainPhotoTest(BasePhotoTest):
@@ -114,38 +114,38 @@ class ShowLinkTest(BasePhotoTest):
 
 
 photos_tests = [
-    unittest.TestSuite((
-        unittest.makeSuite(UploadPhotoTest),
-    )),
-    unittest.TestSuite((
-        unittest.makeSuite(OpenPhotoTest),
-    )),
+    # unittest.TestSuite((
+    #     unittest.makeSuite(UploadPhotoTest),
+    # )),
+    # unittest.TestSuite((
+    #     unittest.makeSuite(OpenPhotoTest),
+    # )),
     unittest.TestSuite((
         unittest.makeSuite(OpenFullScreenTest),
     )),
-    unittest.TestSuite((
-        unittest.makeSuite(MakeMainPhotoTest),
-    )),
-    unittest.TestSuite((
-        unittest.makeSuite(SubmitMainPhotoTest),
-    )),
-    unittest.TestSuite((
-        unittest.makeSuite(ClosePhotoOverlayTest),
-    )),
-    unittest.TestSuite((
-        unittest.makeSuite(ClosePhotoButtonTest),
-    )),
-    unittest.TestSuite((
-        unittest.makeSuite(DeletePhotoTest),
-    )),
-    unittest.TestSuite((
-        unittest.makeSuite(RestorePhotoTest),
-    )),
-    unittest.TestSuite((
-        unittest.makeSuite(AddDescriptionTest),
-    )),
-    unittest.TestSuite((
-        unittest.makeSuite(ShowLinkTest),
-    )),
+    # unittest.TestSuite((
+    #     unittest.makeSuite(MakeMainPhotoTest),
+    # )),
+    # unittest.TestSuite((
+    #     unittest.makeSuite(SubmitMainPhotoTest),
+    # )),
+    # unittest.TestSuite((
+    #     unittest.makeSuite(ClosePhotoOverlayTest),
+    # )),
+    # unittest.TestSuite((
+    #     unittest.makeSuite(ClosePhotoButtonTest),
+    # )),
+    # unittest.TestSuite((
+    #     unittest.makeSuite(DeletePhotoTest),
+    # )),
+    # unittest.TestSuite((
+    #     unittest.makeSuite(RestorePhotoTest),
+    # )),
+    # unittest.TestSuite((
+    #     unittest.makeSuite(AddDescriptionTest),
+    # )),
+    # unittest.TestSuite((
+    #     unittest.makeSuite(ShowLinkTest),
+    # )),
 ]
 
