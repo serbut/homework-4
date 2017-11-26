@@ -83,6 +83,36 @@ class DeletePhotoTest(BasePhotoTest):
         self.assertEqual(count, self.photos.get_photos_count() + 1)
 
 
+class RestorePhotoTest(BasePhotoTest):
+    def test(self):
+        id = self.photos.upload_photo()
+        self.photos_page.open()
+        count = self.photos.get_photos_count()
+        self.photos.open_photo(USERNAME, id)
+        self.photos.click_delete()
+
+        self.photos.click_restore()
+        self.photos_page.open()
+        self.assertEqual(count, self.photos.get_photos_count())
+
+
+class AddDescriptionTest(BasePhotoTest):
+    def test(self):
+        description = "Some text"
+        id = self.photos.upload_photo()
+        self.photos.open_photo(USERNAME, id)
+        self.photos.add_description(description)
+
+        self.photos.check_description(description)
+
+
+class ShowLinkTest(BasePhotoTest):
+    def test(self):
+        id = self.photos.upload_photo()
+        self.photos.open_photo(USERNAME, id)
+        self.assertEqual(self.driver.current_url, self.photos.get_link())
+
+
 photos_tests = [
     unittest.TestSuite((
         unittest.makeSuite(UploadPhotoTest),
@@ -107,6 +137,15 @@ photos_tests = [
     )),
     unittest.TestSuite((
         unittest.makeSuite(DeletePhotoTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(RestorePhotoTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(AddDescriptionTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(ShowLinkTest),
     )),
 ]
 

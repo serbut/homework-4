@@ -57,17 +57,31 @@ class Photos(Component):
     PHOTO = '//a[@class="photo-card_cnt"]'
     RESULT = '//div[@data-l="t,image"]'
     FULLSCREEN = '//i[@class="tico_img ic ic_full-scr"]'
+
     MAKEMAIN = '//i[@class="tico_img ic ic_i_mainPhoto"]'
     FRAME_AREA = '//div[@class="jcrop-tracker"]'
     SUBMITMAIN = '//button[@class="js-doCrop button-pro"]'
+
     CLOSE_OVERLAY = '//div[@data-l="t,closeOverlay"]'
     CLOSE_BUTTON = '//div[@data-l="t,close"]'
+
     MINIMIZE_BUTTON = '//div[@class="ic photo-layer_fullscreen_btn __enabled"]'
+
     DELETE = '//i[@class="tico_img ic ic_delete"]'
+    RESTORE = '//a[contains(text(), "Восстановить")]'
+
+    DESCRIPTION_BUTTON = '//span[@class="tico_txt"]'
+    DESCRIPTION_FIELD = '//textarea[@class="js-textarea itx photo-layer_descr_ceditable"]'
+    DESCRIPTION_SAVE = '//input[@class="button-pro __small form-actions_yes"]'
+    DESCRIPTION = '//span[contains(text(), "{}")]'
+
+    SHOW_LINK = '//span[contains(text(), "Получить ссылку")]'
+    LINK = '//input[@class="photo-layer_get-link_ac"]'
 
     BACK = '//span[@class="tico tico__12"][contains(text(), "Вернуться")]'
     SUCCESS = '//div[@class="js-show-controls"]'
     ALBUM = '//span[@class="portlet_h_name_t"]/a[@class="o"]'
+
 
     def upload_photo(self):
         self.driver.find_element_by_xpath(self.UPLOAD).click()
@@ -123,17 +137,27 @@ class Photos(Component):
         self.driver.find_element_by_xpath(self.CLOSE_BUTTON).click()
 
     def check_photo_dissapeared(self):
-        # return True
-        # return len(self.driver.find_elements_by_xpath(self.RESULT)) == 0
-        try: # TODO: поменять
-            self.driver.find_element_by_xpath(self.RESULT)
-        except NoSuchElementException:
-            return True
-        return False
+        return len(self.driver.find_elements_by_xpath(self.RESULT)) == 0
 
     def click_delete(self):
         self.driver.find_element_by_xpath(self.DELETE).click()
 
+    def click_restore(self):
+        self.driver.find_element_by_xpath(self.RESTORE).click()
+
+    def add_description(self, text):
+        self.driver.find_element_by_xpath(self.DESCRIPTION_BUTTON).click()
+        expected_conditions.visibility_of_element_located((By.XPATH, self.DESCRIPTION_FIELD))
+        self.driver.find_element_by_xpath(self.DESCRIPTION_FIELD).send_keys(text)
+        self.driver.find_element_by_xpath(self.DESCRIPTION_SAVE).click()
+
+    def check_description(self, text):
+        expected_conditions.visibility_of_element_located((By.XPATH, self.DESCRIPTION.format(text)))
+
+    def get_link(self):
+        self.driver.find_element_by_xpath(self.SHOW_LINK).click()
+        expected_conditions.visibility_of_element_located((By.XPATH, self.LINK))
+        return self.driver.find_element_by_xpath(self.LINK).get_attribute('value')
 
 
 class AuthForm(Component):
