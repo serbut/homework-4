@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+
 import unittest
 
 from base_test import BaseTest, USERNAME
-from page import PhotosPage
+from page import PhotosPage, MainPage
 
 
 class BasePhotoTest(BaseTest):
@@ -13,16 +15,21 @@ class BasePhotoTest(BaseTest):
         self.photos = self.photos_page.photos()
 
 
+class UploadPhotoTest(BasePhotoTest):
+    def test(self):
+        self.photos.upload_photo()
+
+
 class OpenPhotoTest(BasePhotoTest):
     def test(self):
-        self.photos.open_photo()
-        self.photos.check_photo_opened()
+        id = self.photos.upload_photo()
+        self.photos.open_photo(USERNAME, id)
 
 
 class OpenFullScreenTest(BasePhotoTest):
     def test(self):
-        self.photos.open_photo()
-        self.photos.check_photo_opened()
+        id = self.photos.upload_photo()
+        self.photos.open_photo(USERNAME, id)
 
         self.photos.open_fullscreen()
         # TODO test
@@ -30,14 +37,56 @@ class OpenFullScreenTest(BasePhotoTest):
 
 class MakeMainPhotoTest(BasePhotoTest):
     def test(self):
-        self.photos.open_photo()
-        self.photos.check_photo_opened()
+        id = self.photos.upload_photo()
+        self.photos.open_photo(USERNAME, id)
 
-        self.photos.make_main()
+        self.photos.click_make_main()
         self.photos.check_frame_area()
 
 
+class SubmitMainPhotoTest(BasePhotoTest):
+    def test(self):
+        id = self.photos.upload_photo()
+        self.photos.submit_main(USERNAME, id)
+
+        self.main_page = MainPage(self.driver, USERNAME)
+        self.main_page.open()
+        # TODO: Check new photo appeared
+
+
+class ClosePhotoOverlayTest(BasePhotoTest):
+    def test(self):
+        id = self.photos.upload_photo()
+        self.photos.open_photo(USERNAME, id)
+        self.photos.click_overlay()
+        self.assertTrue(self.photos.check_photo_dissapeared())
+
+
+class ClosePhotoButtonTest(BasePhotoTest):
+    def test(self):
+        id = self.photos.upload_photo()
+        self.photos.open_photo(USERNAME, id)
+        self.photos.click_close()
+        self.assertTrue(self.photos.check_photo_dissapeared())
+
+
+class DeletePhotoTest(BasePhotoTest):
+    def test(self):
+        id = self.photos.upload_photo()
+        self.photos_page.open()
+        count = self.photos.get_photos_count()
+
+        self.photos.open_photo(USERNAME, id)
+
+        self.photos.click_delete()
+        self.photos_page.open()
+        self.assertEqual(count, self.photos.get_photos_count() + 1)
+
+
 photos_tests = [
+    unittest.TestSuite((
+        unittest.makeSuite(UploadPhotoTest),
+    )),
     unittest.TestSuite((
         unittest.makeSuite(OpenPhotoTest),
     )),
@@ -47,6 +96,17 @@ photos_tests = [
     unittest.TestSuite((
         unittest.makeSuite(MakeMainPhotoTest),
     )),
-
+    unittest.TestSuite((
+        unittest.makeSuite(SubmitMainPhotoTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(ClosePhotoOverlayTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(ClosePhotoButtonTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(DeletePhotoTest),
+    )),
 ]
 
