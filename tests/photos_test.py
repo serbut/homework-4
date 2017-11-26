@@ -26,15 +26,6 @@ class OpenPhotoTest(BasePhotoTest):
         self.photos.open_photo(USERNAME, id)
 
 
-class OpenFullScreenTest(BasePhotoTest):
-    def test(self):
-        id = self.photos.upload_photo()
-        self.photos.open_photo(USERNAME, id)
-
-        self.photos.open_fullscreen()
-        self.photos.check_fullscreen_opened()
-
-
 class MakeMainPhotoTest(BasePhotoTest):
     def test(self):
         id = self.photos.upload_photo()
@@ -51,7 +42,7 @@ class SubmitMainPhotoTest(BasePhotoTest):
 
         self.main_page = MainPage(self.driver, USERNAME)
         self.main_page.open()
-        # TODO: Check new photo appeared
+        self.assertEqual(id, self.main_page.get_photo_id())
 
 
 class ClosePhotoOverlayTest(BasePhotoTest):
@@ -92,13 +83,14 @@ class RestorePhotoTest(BasePhotoTest):
         self.photos.click_delete()
 
         self.photos.click_restore()
+        self.photos.click_close()
         self.photos_page.open()
         self.assertEqual(count, self.photos.get_photos_count())
 
 
 class AddDescriptionTest(BasePhotoTest):
     def test(self):
-        description = "Some text"
+        description = "Some description"
         id = self.photos.upload_photo()
         self.photos.open_photo(USERNAME, id)
         self.photos.add_description(description)
@@ -113,39 +105,49 @@ class ShowLinkTest(BasePhotoTest):
         self.assertEqual(self.driver.current_url, self.photos.get_link())
 
 
+class AddCommentTest(BasePhotoTest):
+    def test(self):
+        comment = "Some comment"
+        id = self.photos.upload_photo()
+        self.photos.open_photo(USERNAME, id)
+        self.photos.add_comment(comment)
+
+        self.photos.check_comment()
+
+
 photos_tests = [
-    # unittest.TestSuite((
-    #     unittest.makeSuite(UploadPhotoTest),
-    # )),
-    # unittest.TestSuite((
-    #     unittest.makeSuite(OpenPhotoTest),
-    # )),
     unittest.TestSuite((
-        unittest.makeSuite(OpenFullScreenTest),
+        unittest.makeSuite(UploadPhotoTest),
     )),
-    # unittest.TestSuite((
-    #     unittest.makeSuite(MakeMainPhotoTest),
-    # )),
-    # unittest.TestSuite((
-    #     unittest.makeSuite(SubmitMainPhotoTest),
-    # )),
-    # unittest.TestSuite((
-    #     unittest.makeSuite(ClosePhotoOverlayTest),
-    # )),
-    # unittest.TestSuite((
-    #     unittest.makeSuite(ClosePhotoButtonTest),
-    # )),
-    # unittest.TestSuite((
-    #     unittest.makeSuite(DeletePhotoTest),
-    # )),
-    # unittest.TestSuite((
-    #     unittest.makeSuite(RestorePhotoTest),
-    # )),
-    # unittest.TestSuite((
-    #     unittest.makeSuite(AddDescriptionTest),
-    # )),
-    # unittest.TestSuite((
-    #     unittest.makeSuite(ShowLinkTest),
-    # )),
+    unittest.TestSuite((
+        unittest.makeSuite(OpenPhotoTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(MakeMainPhotoTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(SubmitMainPhotoTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(ClosePhotoOverlayTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(ClosePhotoButtonTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(DeletePhotoTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(RestorePhotoTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(AddDescriptionTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(ShowLinkTest),
+    )),
+    unittest.TestSuite((
+        unittest.makeSuite(AddCommentTest),
+    )),
 ]
 

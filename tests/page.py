@@ -23,19 +23,21 @@ class Page(object):
 
 
 class AuthPage(Page):
-    PATH = ''
-
     @property
     def form(self):
         return AuthForm(self.driver)
 
 
 class MainPage(Page):
+    PHOTO = '//a[@class="card_wrp"]'
+
     def __init__(self, driver, user):
         super(MainPage, self).__init__(driver)
         self.PATH = user
 
-    # def get
+    def get_photo_id(self):
+        href = self.driver.find_element_by_xpath(self.PHOTO).get_attribute('href').split('/')
+        return href[len(href) - 1]
 
 
 class PhotosPage(Page):
@@ -53,13 +55,16 @@ class Component(object):
 
 
 class Photos(Component):
-    UPLOAD = '//span[@class="html5-link_w js-fileapi-wrapper photo_upload_btn"]'
+    TOP = '//div[@class="mainTopContentRow"]'
 
-    PHOTO = '//a[@class="photo-card_cnt"]'
+    UPLOAD = '//input[@title="Добавить фото"]'
+    DESC = '//div[@class="photo-crop"]'
+    UPLOADED = '//div[@class="h-mod __uploaded"]'
+
+    PREVIEW = '//a[@class="photo-card_cnt"]'
+    PHOTO = '//a[@class="photo-card_cnt"][@href="/{}/pphotos/{}"]'
+    COUNT = '//div[@id="hook_Block_UserStreamPhotosV2Block"]//span[@class="portlet_h_name_aux lstp-t"]'
     RESULT = '//div[@data-l="t,image"]'
-
-    FULLSCREEN = '//i[@class="tico_img ic ic_full-scr"]'
-    FULLSCREEN_CLASS = 'photo-layer_fullScreen'
 
     MAKEMAIN = '//i[@class="tico_img ic ic_i_mainPhoto"]'
     FRAME_AREA = '//div[@class="jcrop-tracker"]'
@@ -81,30 +86,34 @@ class Photos(Component):
     SHOW_LINK = '//span[contains(text(), "Получить ссылку")]'
     LINK = '//input[@class="photo-layer_get-link_ac"]'
 
+    COMMENT_ADD = '//div[@class="itx js-comments_add js-ok-e comments_add-ceditable "]'
+    COMMENT_SAVE = '//button[@class="button-pro form-actions_yes"]'
+    COMMENT = '//div[@class="comments_text textWrap"]'
 
-    BACK = '//span[@class="tico tico__12"][contains(text(), "Вернуться")]'
-    SUCCESS = '//div[@class="js-show-controls"]'
+    BACK = '//span[@class="tico tico__12"][contains(text(), "Вернуться назад")]'
     ALBUM = '//span[@class="portlet_h_name_t"]/a[@class="o"]'
 
-
     def upload_photo(self):
-        self.driver.find_element_by_xpath(self.UPLOAD).click()
-        self.driver.find_element_by_xpath(
-            '//input[@type="file"][@name="photo"][not(@value)]').send_keys(os.path.join(os.getcwd(), 'tests/photos/img.jpg'))
-        try:
-            expected_conditions.visibility_of_element_located((By.XPATH, self.SUCCESS))
+        expected_conditions.visibility_of_element_located((By.XPATH, self.TOP))
+        self.driver.find_element_by_xpath(self.UPLOAD).send_keys(os.path.join(os.getcwd(), 'tests/photos/img.jpg'))
+        expected_conditions.visibility_of_element_located((By.XPATH, self.UPLOADED))
+        self.driver.implicitly_wait(1)
+
+        if len(self.driver.find_elements_by_xpath(self.BACK)) != 0:
             self.driver.find_element_by_xpath(self.BACK).click()
-        except NoSuchElementException:
+        else:
             self.driver.find_element_by_xpath(self.ALBUM).click()
 
-        href = self.driver.find_element_by_xpath(self.PHOTO).get_attribute('href').split('/')
+        self.driver.implicitly_wait(5)
+        href = self.driver.find_element_by_xpath(self.PREVIEW).get_attribute('href').split('/')
         return href[len(href) - 1]
 
     def get_photos_count(self):
-        return len(self.driver.find_elements_by_xpath(self.PHOTO))
+        return int(self.driver.find_element_by_xpath(self.COUNT).text)
 
     def click_on_photo(self, user, id):
-        self.driver.find_element_by_xpath('//a[@class="photo-card_cnt"][@href!="/{}/pphotos/{}"]'.format(user, id)).click()
+        expected_conditions.visibility_of_element_located((By.XPATH, self.PHOTO.format(user, id)))
+        self.driver.find_element_by_xpath(self.PHOTO.format(user, id)).click()
 
     def check_photo_opened(self):
         expected_conditions.visibility_of_element_located((By.XPATH, self.RESULT))
@@ -114,18 +123,12 @@ class Photos(Component):
         self.click_on_photo(user, id)
         self.check_photo_opened()
 
-    def open_fullscreen(self):
-        self.driver.find_element_by_xpath(self.FULLSCREEN).click()
-
-    def check_fullscreen_opened(self):
-        WebDriverWait(self.driver, 10).until(
-            lambda driver: self.FULLSCREEN_CLASS in self.driver.find_element_by_tag_name('body').get_attribute('class')
-        )
-
     def click_make_main(self):
-        self.driver.find_element_by_xpath(self.MAKEMAIN).click()
+        overlay = self.driver.find_element_by_xpath(self.MAKEMAIN)
+        self.driver.execute_script("arguments[0].click();", overlay)
 
     def check_frame_area(self):
+        expected_conditions.visibility_of_element_located((By.XPATH, self.FRAME_AREA))
         self.driver.find_element_by_xpath(self.FRAME_AREA)
 
     def submit_main(self, user, id):
@@ -135,26 +138,36 @@ class Photos(Component):
         self.driver.find_element_by_xpath(self.SUBMITMAIN).click()
 
     def click_overlay(self):
-        element = self.driver.find_element_by_xpath(self.CLOSE_OVERLAY)
-        self.driver.execute_script("arguments[0].click();", element)
+        overlay = self.driver.find_element_by_xpath(self.CLOSE_OVERLAY)
+        self.driver.execute_script("arguments[0].click();", overlay)
 
     def click_close(self):
-        self.driver.find_element_by_xpath(self.CLOSE_BUTTON).click()
+        button = self.driver.find_element_by_xpath(self.CLOSE_BUTTON)
+        self.driver.execute_script("arguments[0].click();", button)
 
     def check_photo_dissapeared(self):
-        return len(self.driver.find_elements_by_xpath(self.RESULT)) == 0
+        self.driver.implicitly_wait(1)
+        is_dissapeared = len(self.driver.find_elements_by_xpath(self.RESULT)) == 0
+        self.driver.implicitly_wait(5)
+        return is_dissapeared
 
     def click_delete(self):
-        self.driver.find_element_by_xpath(self.DELETE).click()
+        button = self.driver.find_element_by_xpath(self.DELETE)
+        self.driver.execute_script("arguments[0].click();", button)
 
     def click_restore(self):
-        self.driver.find_element_by_xpath(self.RESTORE).click()
+        button = self.driver.find_element_by_xpath(self.RESTORE)
+        self.driver.execute_script("arguments[0].click();", button)
 
     def add_description(self, text):
-        self.driver.find_element_by_xpath(self.DESCRIPTION_BUTTON).click()
+        button_save = self.driver.find_element_by_xpath(self.DESCRIPTION_BUTTON)
+        self.driver.execute_script("arguments[0].click();", button_save)
+
         expected_conditions.visibility_of_element_located((By.XPATH, self.DESCRIPTION_FIELD))
         self.driver.find_element_by_xpath(self.DESCRIPTION_FIELD).send_keys(text)
-        self.driver.find_element_by_xpath(self.DESCRIPTION_SAVE).click()
+
+        button_save = self.driver.find_element_by_xpath(self.DESCRIPTION_SAVE)
+        self.driver.execute_script("arguments[0].click();", button_save)
 
     def check_description(self, text):
         expected_conditions.visibility_of_element_located((By.XPATH, self.DESCRIPTION.format(text)))
@@ -163,6 +176,13 @@ class Photos(Component):
         self.driver.find_element_by_xpath(self.SHOW_LINK).click()
         expected_conditions.visibility_of_element_located((By.XPATH, self.LINK))
         return self.driver.find_element_by_xpath(self.LINK).get_attribute('value')
+
+    def add_comment(self, text):
+        self.driver.find_element_by_xpath(self.COMMENT_ADD).send_keys(text)
+        self.driver.find_element_by_xpath(self.COMMENT_SAVE).click()
+
+    def check_comment(self):
+        expected_conditions.visibility_of_element_located((By.XPATH, self.COMMENT))
 
 
 class AuthForm(Component):
