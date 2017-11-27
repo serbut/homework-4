@@ -3,11 +3,12 @@
 import urlparse
 
 import os
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
-#
-# MAX_WAIT = 10
-# MIN_WAIT = 1
+from selenium.webdriver.support.wait import WebDriverWait
+
+WAIT_TIME = 10
 
 class Page(object):
     BASE_URL = 'https://ok.ru/'
@@ -59,7 +60,7 @@ class Photos(Component):
 
     UPLOAD = '//input[@title="Добавить фото"]'
     DESC = '//div[@class="photo-crop"]'
-    UPLOADED = '//div[@class="h-mod __uploaded"]'
+    UPLOADED = '//div[@class="h-mod __uploaded"] | //img[@class="photo-sc_i_cnt_a_img va_target"]'
 
     PREVIEW = '//a[@class="photo-card_cnt"]'
     PHOTO = '//a[@class="photo-card_cnt"][@href="/{}/pphotos/{}"]'
@@ -90,22 +91,19 @@ class Photos(Component):
     COMMENT_SAVE = '//button[@class="button-pro form-actions_yes"]'
     COMMENT = '//div[@class="comments_text textWrap"]'
 
-    BACK = '//span[@class="tico tico__12"][contains(text(), "Вернуться назад")]'
-    ALBUM = '//span[@class="portlet_h_name_t"]/a[@class="o"]'
+    BACK = '//span[@class="tico tico__12"][contains(text(), "Вернуться")] | //span[@class="portlet_h_name_t"]/a[@class="o"]'
+
 
     def upload_photo(self):
         expected_conditions.visibility_of_element_located((By.XPATH, self.TOP))
         self.driver.find_element_by_xpath(self.UPLOAD).send_keys(os.path.join(os.getcwd(), 'tests/photos/img.jpg'))
-        expected_conditions.visibility_of_element_located((By.XPATH, self.UPLOADED))
-        # self.driver.implicitly_wait(MIN_WAIT)
 
-        if len(self.driver.find_elements_by_xpath(self.BACK)) != 0:
-            self.driver.find_element_by_xpath(self.BACK).click()
-        else:
-            expected_conditions.visibility_of_element_located((By.XPATH, self.ALBUM))
-            self.driver.find_element_by_xpath(self.ALBUM).click()
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(expected_conditions.visibility_of_element_located((By.XPATH, self.UPLOADED)))
+        self.driver.find_element_by_xpath(self.BACK).click()
 
-        # self.driver.implicitly_wait(MAX_WAIT)
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(expected_conditions.visibility_of_element_located((By.XPATH, self.PREVIEW)))
         href = self.driver.find_element_by_xpath(self.PREVIEW).get_attribute('href').split('/')
         return href[len(href) - 1]
 
@@ -117,7 +115,8 @@ class Photos(Component):
         self.driver.find_element_by_xpath(self.PHOTO.format(user, id)).click()
 
     def check_photo_opened(self):
-        self.driver.find_element_by_xpath(self.RESULT)
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(expected_conditions.visibility_of_element_located((By.XPATH, self.RESULT)))
 
     def open_photo(self, user, id):
         self.click_on_photo(user, id)
@@ -145,11 +144,11 @@ class Photos(Component):
         button = self.driver.find_element_by_xpath(self.CLOSE_BUTTON)
         self.driver.execute_script("arguments[0].click();", button)
 
-    def check_photo_dissapeared(self):
-        self.driver.implicitly_wait(MIN_WAIT)
-        is_dissapeared = len(self.driver.find_elements_by_xpath(self.RESULT)) == 0
-        self.driver.implicitly_wait(MAX_WAIT)
-        return is_dissapeared
+    def check_photo_disappeared(self):
+        self.driver.implicitly_wait(0)
+        is_disappeared = len(self.driver.find_elements_by_xpath(self.RESULT)) == 0
+        self.driver.implicitly_wait(WAIT_TIME)
+        return is_disappeared
 
     def click_delete(self):
         button = self.driver.find_element_by_xpath(self.DELETE)

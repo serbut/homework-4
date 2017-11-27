@@ -70,7 +70,7 @@ class ClosePhotoOverlayTest(BasePhotoTest):
         id = self.add_photo()
         self.photos.open_photo(USERNAME, id)
         self.photos.click_overlay()
-        self.assertTrue(self.photos.check_photo_dissapeared())
+        self.assertTrue(self.photos.check_photo_disappeared())
 
 
 class ClosePhotoButtonTest(BasePhotoTest):
@@ -78,7 +78,7 @@ class ClosePhotoButtonTest(BasePhotoTest):
         id = self.add_photo()
         self.photos.open_photo(USERNAME, id)
         self.photos.click_close()
-        self.assertTrue(self.photos.check_photo_dissapeared())
+        self.assertTrue(self.photos.check_photo_disappeared())
 
 
 class DeletePhotoTest(BasePhotoTest):
@@ -118,9 +118,10 @@ class AddDescriptionTest(BasePhotoTest):
 
 class ShowLinkTest(BasePhotoTest):
     def test(self):
+        link = "https://ok.ru/{}/pphotos/{}"
         id = self.add_photo()
         self.photos.open_photo(USERNAME, id)
-        self.assertEqual(self.driver.current_url, self.photos.get_link())
+        self.assertEqual(link.format(USERNAME, id), self.photos.get_link())
 
 
 class AddCommentTest(BasePhotoTest):
